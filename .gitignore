@@ -1,0 +1,32 @@
+# Go build / module artifacts
+bin/
+dist/
+*.exe
+*.test
+*.out
+coverage.*
+
+# Go toolchain caches
+*.prof
+*.pprof
+*.cgo1.go
+*.cgo2.c
+*.vscode/
+/.idea/
+
+# Module/vendor
+/vendor/
+
+# Local configuration and data
+config.json
+cache/
+data/
+logs/
+state/
+
+# Token caches or secrets
+*.token.json
+
+# System files
+.DS_Storeo
+.env

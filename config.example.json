@@ -1,0 +1,9 @@
+{
+  "deviceId": "emmy-r-.....",
+  "basicAuth": "NmVhZjFhZGYt....",
+  "tokenFilePath": "./cache/token.json",
+  "storageRoot": "./data",
+  "sqlitePath": "./state/nibe.sqlite",
+  "logsPath": "./logs",
+  "apiBaseUrl": "https://api.myuplink.com"
+}

@@ -1,0 +1,81 @@
+# MyUplink Naive Client
+
+This tool retrieves telemetry data from the MyUplink API for a single device. It authenticates with the client-credentials flow, caches bearer tokens between runs, appends the raw payload to JSONL storage, and records each metric in a denormalised SQLite table. The program is designed for cron-style execution: it runs once, persists data, logs to disk, and exits without writing to stdout or stderr.
+
+## Prerequisites
+
+- Go 1.22 or newer.
+- API credentials that allow you to request `READSYSTEM` scope from `https://api.myuplink.com`.
+- Network access from the machine that will execute the script.
+
+## Getting Started
+
+1. Clone or download this repository.
+2. Copy the example configuration and adjust it for your environment:
+   ```sh
+   cp config.example.json config.json
+   ```
+3. Edit `config.json` to point at your real MyUplink credentials and desired storage locations. Production paths might resemble `/home/ubuntu/exploration/2025-10-nibe-ducktaped/…`, while development defaults in the example stay in the project directory.
+4. Create the directories referenced in your config if they do not already exist:
+   ```sh
+   mkdir -p ./cache ./data ./logs ./state
+   mkdir -p /home/ubuntu/exploration/2025-10-nibe-ducktaped/{cache,data,logs,state}  # example prod paths
+   ```
+   The program will also attempt to create missing directories at runtime, but creating them upfront ensures expected permissions.
+
+## Building
+
+Compile the single binary:
+
+```sh
+go build -o bin/nibe-fetch ./cmd/nibe-fetch
+```
+
+This produces `bin/nibe-fetch`, which you can copy to the host that will run the job.
+
+## Running Manually
+
+Execute the fetcher by pointing it at your configuration file:
+
+```sh
+./bin/nibe-fetch -config /path/to/config.json
+```
+
+On each run the program will:
+
+- Request or reuse a bearer token stored at `config.tokenFilePath`.
+- Fetch device telemetry and append the full JSON response to `config.storageRoot/<deviceId>.<YYYY-MM-DD>.jsonl`.
+- Insert all metrics into the `telemetry` table inside `config.sqlitePath`.
+- Write log lines to `config.logsPath/nibs-fetch.<YYYY-MM-DD>.log`.
+
+Errors are logged to the daily log file; nothing is printed to stdout or stderr.
+
+## Scheduling with Cron
+
+Add an entry similar to the following (runs every 15 minutes):
+
+```
+*/15 * * * * /opt/nibe/bin/nibe-fetch -config /opt/nibe/config.json
+```
+
+Ensure the cron user has permission to write to the paths declared in the configuration file. Logs rotate daily by timestamp; rely on external rotation if you need retention limits.
+
+## Token Cache Notes
+
+The token cache stored at `config.tokenFilePath` contains the access token plus its calculated expiry time. The program refreshes the token automatically when it has expired or is missing. Make sure the cache file is writable by the scheduled user.
+
+## Testing
+
+Run the unit tests before deploying changes:
+
+```sh
+go test ./...
+```
+
+Tests cover token caching and end-to-end persistence (JSONL + SQLite) using test fixtures.
+
+## Troubleshooting
+
+- **Authentication failures**: confirm `basicAuth` contains the base64 client credential string and the client has `READSYSTEM` scope enabled.
+- **Permission issues**: check that the configured directories exist and are writable by the runtime user, particularly for the SQLite database and log files.
+- **Unexpected schema changes**: the collector logs JSON parsing errors but still writes the raw payload to JSONL so you can inspect differences.
