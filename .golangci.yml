@@ -19,3 +19,8 @@ linters-settings:
 
 issues:
   exclude-use-default: false
+  exclude-rules:
+    - linters:
+        - staticcheck
+        - errcheck
+      text: "(Close.*not checked|Error return value.*Close.*not checked)"

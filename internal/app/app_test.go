@@ -49,7 +49,7 @@ func TestRun_PersistsTelemetry(t *testing.T) {
 			t.Fatalf("missing bearer auth, got %q", got)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, telemetryPayload)
+		_, _ = fmt.Fprint(w, telemetryPayload)
 	})
 
 	server := httptest.NewServer(mux)

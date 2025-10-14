@@ -8,7 +8,7 @@ This tool retrieves telemetry data from the MyUplink API for a single device. It
 
 ## Prerequisites
 
-- Go 1.22 or newer.
+- Go 1.24 or newer.
 - API credentials that allow you to request `READSYSTEM` scope from `https://api.myuplink.com`.
 - Network access from the machine that will execute the script.
 
@@ -96,7 +96,7 @@ Tests cover token caching and end-to-end persistence (JSONL + SQLite) using test
 - Use the provided Makefile for common tasks:
   ```sh
   make fmt   # gofumpt formatting (falls back to gofmt)
-  make lint  # golangci-lint run --config=.golangci.yml
+  make lint  # installs golangci-lint if missing, then run with .golangci.yml
   make test  # go test ./...
   make build # go build -o bin/nibe-fetch ./cmd/nibe-fetch
   ```
