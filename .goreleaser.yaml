@@ -1,3 +1,5 @@
+version: 2
+
 project_name: myuplink-naive-client
 
 before:
@@ -24,6 +26,9 @@ archives:
     builds:
       - nibe-fetch
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
 
 checksum:
   name_template: "checksums.txt"

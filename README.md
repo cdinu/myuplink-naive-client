@@ -103,8 +103,10 @@ Tests cover token caching and end-to-end persistence (JSONL + SQLite) using test
 - Continuous integration runs `go test ./...` and `golangci-lint` on pushes and pull requests.
 - Release binaries can be produced with [GoReleaser](https://goreleaser.com/):
   ```sh
+  export GITHUB_TOKEN=ghp_your_token   # required for non-snapshot releases
   goreleaser release --snapshot --clean
   ```
+- GitHub Actions automatically runs GoReleaser and attaches binaries whenever a tag matching `v*` is pushed.
 
 ## Troubleshooting
 
