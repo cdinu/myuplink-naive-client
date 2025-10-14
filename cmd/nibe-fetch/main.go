@@ -17,7 +17,18 @@ import (
 func main() {
 	flag.CommandLine.SetOutput(io.Discard)
 	configPath := flag.String("config", "config.json", "path to configuration file")
+	initFlag := flag.Bool("init", false, "initialise workspace (writes sample config and directories) and exit")
 	flag.Parse()
+
+	if *initFlag {
+		summary, err := initializeWorkspace(*configPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "init error: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Print(summary)
+		return
+	}
 
 	cfg, err := config.Load(*configPath)
 	if err != nil {

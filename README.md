@@ -1,3 +1,7 @@
+![CI](https://github.com/cdinu/myuplink-naive-client/actions/workflows/ci.yml/badge.svg)
+[![Go Reference](https://pkg.go.dev/badge/github.com/cdinu/myuplink-naive-client.svg)](https://pkg.go.dev/github.com/cdinu/myuplink-naive-client)
+[![Go Report Card](https://goreportcard.com/badge/github.com/cdinu/myuplink-naive-client)](https://goreportcard.com/report/github.com/cdinu/myuplink-naive-client)
+
 # MyUplink Naive Client
 
 This tool retrieves telemetry data from the MyUplink API for a single device. It authenticates with the client-credentials flow, caches bearer tokens between runs, appends the raw payload to JSONL storage, and records each metric in a denormalised SQLite table. The program is designed for cron-style execution: it runs once, persists data, logs to disk, and exits without writing to stdout or stderr.
@@ -19,11 +23,12 @@ This tool retrieves telemetry data from the MyUplink API for a single device. It
      ```
    - The resulting string is what you place into `config.basicAuth`.
    - With authorization in place, call `GET /v2/systems/me`. The response lists `systems[*].devices[*].id`; pick the device ID that matches the unit you want to monitor.
-3. Clone or download this repository.
-4. Copy the example configuration and adjust it for your environment:
+3. Clone or download this repository (or download the released binary).
+4. Initialise the workspace. With the binary, you can let the CLI create a skeleton configuration and default directories:
    ```sh
-   cp config.example.json config.json
+   ./nibe-fetch -config ./config.json -init
    ```
+   This writes placeholder values to `config.json` and creates `cache`, `data`, `logs`, and `state` relative to the config file. Alternatively, copy `config.example.json` to `config.json` and create the directories manually.
 5. Edit `config.json` to include:
    - `deviceId`: the value from the `systems[*].devices[*].id` field.
    - `basicAuth`: the base64 output from the previous step.
@@ -85,6 +90,21 @@ go test ./...
 ```
 
 Tests cover token caching and end-to-end persistence (JSONL + SQLite) using test fixtures.
+
+## Development
+
+- Use the provided Makefile for common tasks:
+  ```sh
+  make fmt   # gofumpt formatting (falls back to gofmt)
+  make lint  # golangci-lint run --config=.golangci.yml
+  make test  # go test ./...
+  make build # go build -o bin/nibe-fetch ./cmd/nibe-fetch
+  ```
+- Continuous integration runs `go test ./...` and `golangci-lint` on pushes and pull requests.
+- Release binaries can be produced with [GoReleaser](https://goreleaser.com/):
+  ```sh
+  goreleaser release --snapshot --clean
+  ```
 
 ## Troubleshooting
 
