@@ -10,13 +10,25 @@ This tool retrieves telemetry data from the MyUplink API for a single device. It
 
 ## Getting Started
 
-1. Clone or download this repository.
-2. Copy the example configuration and adjust it for your environment:
+1. Create an API application at [dev.myuplink.com/apps](https://dev.myuplink.com/apps?activeTab=0). After completing the form you will receive a **client identifier** and **client secret**.
+2. Obtain the device ID you want to poll:
+   - Open the MyUplink Swagger explorer at [api.myuplink.com/swagger/index.html](https://api.myuplink.com/swagger/index.html).
+   - Use the “Authorize” button, supplying the client ID and secret. If you prefer the CLI, base64 encode `client_id:client_secret`:
+     ```sh
+     printf "%s:%s" "$CLIENT_ID" "$CLIENT_SECRET" | base64
+     ```
+   - The resulting string is what you place into `config.basicAuth`.
+   - With authorization in place, call `GET /v2/systems/me`. The response lists `systems[*].devices[*].id`; pick the device ID that matches the unit you want to monitor.
+3. Clone or download this repository.
+4. Copy the example configuration and adjust it for your environment:
    ```sh
    cp config.example.json config.json
    ```
-3. Edit `config.json` to point at your real MyUplink credentials and desired storage locations. Production paths might resemble `/home/ubuntu/exploration/2025-10-nibe-ducktaped/…`, while development defaults in the example stay in the project directory.
-4. Create the directories referenced in your config if they do not already exist:
+5. Edit `config.json` to include:
+   - `deviceId`: the value from the `systems[*].devices[*].id` field.
+   - `basicAuth`: the base64 output from the previous step.
+   - Local paths for `tokenFilePath`, `storageRoot`, `sqlitePath`, and `logsPath`. Production paths might resemble `/home/ubuntu/exploration/2025-10-nibe-ducktaped/…`, while development defaults in the example stay in the project directory.
+6. Create the directories referenced in your config if they do not already exist:
    ```sh
    mkdir -p ./cache ./data ./logs ./state
    mkdir -p /home/ubuntu/exploration/2025-10-nibe-ducktaped/{cache,data,logs,state}  # example prod paths
