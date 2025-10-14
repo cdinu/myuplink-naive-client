@@ -1,0 +1,32 @@
+project_name: myuplink-naive-client
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: nibe-fetch
+    main: ./cmd/nibe-fetch
+    binary: nibe-fetch
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: archives
+    format: tar.gz
+    builds:
+      - nibe-fetch
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  use: git
