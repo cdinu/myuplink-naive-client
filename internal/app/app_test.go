@@ -58,7 +58,7 @@ func TestRun_PersistsTelemetry(t *testing.T) {
 	root := t.TempDir()
 
 	cfg := config.Config{
-		DeviceID:      deviceID,
+		DeviceIDs:     []string{deviceID},
 		BasicAuth:     "dummy",
 		TokenFilePath: filepath.Join(root, "cache", "token.json"),
 		StorageRoot:   filepath.Join(root, "data"),
@@ -70,7 +70,7 @@ func TestRun_PersistsTelemetry(t *testing.T) {
 	logger := log.New(io.Discard, "", log.LstdFlags)
 
 	ctx := context.Background()
-	if err := app.Run(ctx, cfg, logger); err != nil {
+	if err := app.Run(ctx, cfg, "", logger); err != nil {
 		t.Fatalf("Run returned error: %v", err)
 	}
 

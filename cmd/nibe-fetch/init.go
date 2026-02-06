@@ -78,13 +78,14 @@ func defaultConfig(base string) config.Config {
 	logsDir := filepath.Join(base, "logs")
 
 	return config.Config{
-		DeviceID:      "REPLACE_WITH_DEVICE_ID",
+		DeviceIDs:     []string{"REPLACE_WITH_DEVICE_ID"},
 		BasicAuth:     "base64(client_id:client_secret)",
 		TokenFilePath: filepath.Join(cacheDir, "token.json"),
 		StorageRoot:   dataDir,
 		SQLitePath:    filepath.Join(stateDir, "nibe.sqlite"),
 		LogsPath:      logsDir,
 		APIBaseURL:    "https://api.myuplink.com",
+		ParameterSets: nil,
 	}
 }
 

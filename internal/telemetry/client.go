@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
 )
@@ -30,8 +31,18 @@ func NewClient(client *http.Client, baseURL string) *Client {
 }
 
 // FetchPoints fetches the telemetry JSON payload and splits it into per-point raw messages.
-func (c *Client) FetchPoints(ctx context.Context, deviceID, token string) ([]byte, []json.RawMessage, error) {
+func (c *Client) FetchPoints(ctx context.Context, deviceID, token string, parameters string) ([]byte, []json.RawMessage, error) {
 	pointsURL := c.baseURL + path.Join("/v3/devices/", deviceID, "/points")
+	if parameters != "" {
+		u, err := url.Parse(pointsURL)
+		if err != nil {
+			return nil, nil, fmt.Errorf("parse URL: %w", err)
+		}
+		q := u.Query()
+		q.Set("parameters", parameters)
+		u.RawQuery = q.Encode()
+		pointsURL = u.String()
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, pointsURL, nil)
 	if err != nil {

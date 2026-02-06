@@ -19,7 +19,7 @@ import (
 )
 
 // Run executes a single telemetry collection cycle.
-func Run(ctx context.Context, cfg config.Config, logger *log.Logger) error {
+func Run(ctx context.Context, cfg config.Config, parameterSetName string, logger *log.Logger) error {
 	if err := ensurePaths(cfg); err != nil {
 		return err
 	}
@@ -43,37 +43,49 @@ func Run(ctx context.Context, cfg config.Config, logger *log.Logger) error {
 	}
 	logger.Printf("token acquired; expires cached at %s", cfg.TokenFilePath)
 
-	telemetryClient := telemetry.NewClient(httpClient, cfg.APIBaseURL)
-	body, rawPoints, err := telemetryClient.FetchPoints(ctx, cfg.DeviceID, tkn)
-	if err != nil {
-		if !errors.Is(err, telemetry.ErrParsePoints) {
-			return fmt.Errorf("fetch telemetry: %w", err)
+	var parameters string
+	if parameterSetName != "" {
+		var ok bool
+		parameters, ok = cfg.ParameterSets[parameterSetName]
+		if !ok {
+			return fmt.Errorf("parameter set %q not found in config", parameterSetName)
 		}
-		logger.Printf("telemetry parse error: %v", err)
 	}
 
+	telemetryClient := telemetry.NewClient(httpClient, cfg.APIBaseURL)
 	day := time.Now().UTC().Format("2006-01-02")
-	jsonlPath, err := storage.AppendJSONL(cfg.StorageRoot, cfg.DeviceID, day, body)
-	if err != nil {
-		return err
-	}
-	logger.Printf("appended telemetry payload to %s", jsonlPath)
 
-	if len(rawPoints) == 0 {
-		logger.Printf("no telemetry points parsed; skipping sqlite insert")
-		return nil
-	}
+	for _, deviceID := range cfg.DeviceIDs {
+		body, rawPoints, err := telemetryClient.FetchPoints(ctx, deviceID, tkn, parameters)
+		if err != nil {
+			if !errors.Is(err, telemetry.ErrParsePoints) {
+				return fmt.Errorf("fetch telemetry for %s: %w", deviceID, err)
+			}
+			logger.Printf("telemetry parse error for %s: %v", deviceID, err)
+		}
 
-	records, err := convertRecords(cfg.DeviceID, rawPoints)
-	if err != nil {
-		logger.Printf("telemetry conversion error: %v", err)
-		return nil
-	}
+		jsonlPath, err := storage.AppendJSONL(cfg.StorageRoot, deviceID, day, body)
+		if err != nil {
+			return err
+		}
+		logger.Printf("appended telemetry payload to %s", jsonlPath)
 
-	if err := db.InsertTelemetry(ctx, records); err != nil {
-		return err
+		if len(rawPoints) == 0 {
+			logger.Printf("no telemetry points parsed for %s; skipping sqlite insert", deviceID)
+			continue
+		}
+
+		records, err := convertRecords(deviceID, rawPoints)
+		if err != nil {
+			logger.Printf("telemetry conversion error for %s: %v", deviceID, err)
+			continue
+		}
+
+		if err := db.InsertTelemetry(ctx, records); err != nil {
+			return err
+		}
+		logger.Printf("inserted %d telemetry rows for %s", len(records), deviceID)
 	}
-	logger.Printf("inserted %d telemetry rows", len(records))
 
 	return nil
 }

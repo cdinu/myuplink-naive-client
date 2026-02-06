@@ -9,13 +9,14 @@ import (
 
 // Config represents the runtime configuration for the fetcher CLI.
 type Config struct {
-	DeviceID      string `json:"deviceId"`
-	BasicAuth     string `json:"basicAuth"`
-	TokenFilePath string `json:"tokenFilePath"`
-	StorageRoot   string `json:"storageRoot"`
-	SQLitePath    string `json:"sqlitePath"`
-	LogsPath      string `json:"logsPath"`
-	APIBaseURL    string `json:"apiBaseUrl"`
+	DeviceIDs     []string          `json:"deviceIds"`
+	BasicAuth     string            `json:"basicAuth"`
+	TokenFilePath string            `json:"tokenFilePath"`
+	StorageRoot   string            `json:"storageRoot"`
+	SQLitePath    string            `json:"sqlitePath"`
+	LogsPath      string            `json:"logsPath"`
+	APIBaseURL    string            `json:"apiBaseUrl"`
+	ParameterSets map[string]string `json:"parameterSets"`
 }
 
 // Load reads and unmarshals the configuration from the provided path.
@@ -38,9 +39,10 @@ func Load(path string) (Config, error) {
 }
 
 func (c Config) validate() error {
+	if len(c.DeviceIDs) == 0 {
+		return fmt.Errorf("config: deviceIds is required")
+	}
 	switch "" {
-	case c.DeviceID:
-		return fmt.Errorf("config: deviceId is required")
 	case c.BasicAuth:
 		return fmt.Errorf("config: basicAuth is required")
 	case c.TokenFilePath:
