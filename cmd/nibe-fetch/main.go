@@ -18,6 +18,7 @@ func main() {
 	flag.CommandLine.SetOutput(io.Discard)
 	configPath := flag.String("config", "config.json", "path to configuration file")
 	initFlag := flag.Bool("init", false, "initialise workspace (writes sample config and directories) and exit")
+	setFlag := flag.String("set", "", "parameter set name to use")
 	flag.Parse()
 
 	if *initFlag {
@@ -46,7 +47,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	if err := app.Run(ctx, cfg, logger); err != nil {
+	if err := app.Run(ctx, cfg, *setFlag, logger); err != nil {
 		logger.Printf("run error: %v", err)
 		os.Exit(1)
 	}
