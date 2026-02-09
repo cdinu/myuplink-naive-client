@@ -30,4 +30,7 @@ state/
 # System files
 .DS_Storeo
 .env
-nibs-fetch.2026-02-06.log
+*.log
+*.jsonl
+nibe-fetch
+/bin/*
