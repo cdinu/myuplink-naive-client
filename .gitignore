@@ -28,7 +28,7 @@ state/
 *.token.json
 
 # System files
-.DS_Storeo
+.DS_Store
 .env
 *.log
 *.jsonl
